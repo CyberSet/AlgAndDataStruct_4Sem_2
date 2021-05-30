@@ -5,15 +5,15 @@
 template<class T>
 class elem {
 private:
-	T inf;
+	T* inf;
 	elem* next;
 public:
-	elem(T elem_inf) { inf = elem_inf; next = nullptr;}
+	elem(T* elem_inf) { inf = elem_inf; next = nullptr;}
 	~elem() {};
 	elem* getNext() { return next; }
 	void setNext(elem* elem_next) { next = elem_next; }
-	T getInf() { return inf; }
-	void setInf(T elem_inf) { inf = elem_inf; }
+	T* getInf() { return inf; }
+	void setInf(T* elem_inf) { inf = elem_inf; }
 };
 
 template<class T>
@@ -26,7 +26,7 @@ public:
 	~list() { clear(); }
 
 	//Adding new element to end of list
-	void push_back(T temp) {
+	void push_back(T* temp) {
 		elem<T>* newElem = new elem<T>(temp);
 		if (isEmpty()) begin = newElem;
 		else end->setNext(newElem);
@@ -35,7 +35,7 @@ public:
 	}
 
 	//Adding new element to begin of list
-	void push_front(T temp) {
+	void push_front(T* temp) {
 		elem<T>* newElem = new elem<T>(temp);
 		if (isEmpty()) end = newElem;
 		else newElem->setNext(begin);
@@ -84,7 +84,7 @@ public:
 	}
 
 	//Adding element to any position in list
-	void insert(T data, size_t pos) {
+	void insert(T* data, size_t pos) {
 		if (pos <= size) {
 			if (isEmpty() || pos == size) push_back(data);
 			else {
@@ -104,7 +104,7 @@ public:
 	}
 
 	//Getting element from list by index
-	int at(size_t pos) {
+	T* at(size_t pos) {
 		if (pos < size) {
 			elem<T>* iter = begin;
 			while (pos-- != 0) iter = iter->getNext();
@@ -168,6 +168,29 @@ public:
 	void push_front(list *lst) {
 		for (size_t i = 0; i < lst->getSize(); i++) 
 			insert(lst->at(i), i);
+	}
+
+	//sorting list for huffman tree
+	void sort() {
+		if (size == 1 || size == 0)
+			return;
+		elem<T>* temp = begin;
+		bool f = false;
+		for (int i = 0; i < size - 1; i++) {
+			temp = begin;
+			f = false;
+			for (int j = 0; j < size - 1 - i; j++) {
+				if (temp->getInf()->getPower() > temp->getNext()->getInf()->getPower()) {
+					T* tempVal = temp->getInf();
+					temp->setInf(temp->getNext()->getInf());
+					temp->getNext()->setInf(tempVal);
+					f = true;
+				}
+				temp = temp->getNext();
+			}
+			if (!f)
+				return;
+		}
 	}
 };
 #endif

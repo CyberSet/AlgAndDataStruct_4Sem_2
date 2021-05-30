@@ -1,9 +1,118 @@
 #pragma once
-#include "node.h"
 #include "list.h"
 using namespace std;
 #ifndef MAP_H
 #define MAP_H
+#define black false
+#define red true
+template < class T1, class T2 >
+class node {
+private:
+	T1 key;
+	T2 value;
+	node* parent;
+	bool color; // false - black, true - red
+	node* left, * right;
+public:
+	node() {
+		parent = nullptr;
+		color = red;
+		left = nullptr;
+		right = nullptr;
+	}
+
+	node(T1 node_key, T2 node_value, node* node_parent = nullptr, node* node_leftChild = nullptr, node* node_rightChild = nullptr, bool node_color = red) {
+		key = node_key;
+		value = node_value;
+		parent = node_parent;
+		color = node_color;
+		left = node_leftChild;
+		right = node_rightChild;
+	}
+
+	node& operator= (node equated_node) {
+		key = equated_node.key;
+		value = equated_node.value;
+		parent = equated_node.parent;
+		color = equated_node.color;
+		left = equated_node.left;
+		right = equated_node.right;
+	}
+
+	friend bool operator> (const node& firstCompared, const node& secondCompared) {
+		return firstCompared.key > secondCompared.key;
+	}
+
+	friend bool operator< (const node& firstCompared, const node& secondCompared) {
+		return firstCompared.key < secondCompared.key;
+	}
+
+	friend bool operator== (const node& firstCompared, const node& secondCompared) {
+		return firstCompared.key == secondCompared.key;
+	}
+
+	friend bool operator!= (const node& firstCompared, const node& secondCompared) {
+		return firstCompared.key != secondCompared.key;
+	}
+
+	~node() {
+
+	}
+
+	T1 getKey() {
+		return key;
+	}
+
+	T2 getValue() {
+		return value;
+	}
+
+	void setParent(node* node_parent) {
+		parent = node_parent;
+	}
+
+	node* getParent() {
+		return parent;
+	}
+
+	void setLeftChild(node* leftChild) {
+		left = leftChild;
+	}
+
+	node* getLeftChild() {
+		return left;
+	}
+
+	void setRightChild(node* rightChild) {
+		right = rightChild;
+	}
+
+	node* getRightChild() {
+		return right;
+	}
+
+	bool isRed() {
+		return color;
+	}
+
+	void setColor(bool node_color) {
+		color = node_color;
+	}
+
+	void changeColor() {
+		color = !color;
+	}
+
+	void showInfo() {
+		cout << "Элемент с ключом " << key << " и значением " << value << (isRed() ? " красного " : " черного ") << "цвета, предок с ключом " << parent->key << ", левый ребенок с ключом " << left->key << ", правый ребенок с ключом " << right->key << endl;
+	}
+
+	void print(node* nil) {
+		showInfo();
+		if (left != nil) left->print(nil);
+		if (right != nil) right->print(nil);
+	}
+};
 template < class T1, class T2 >
 class map {
 private:
@@ -266,5 +375,119 @@ public:
 		if (cur->getLeftChild() != nil) get_values(temp, cur->getLeftChild());
 		if (cur->getRightChild() != nil) get_values(temp, cur->getRightChild());
 	}
+
+	int getSize() {
+		int i = 0;
+		if (root != nil) getSize(i, root);
+		return i;
+	}
+
+	void getSize(int& i, node<T1, T2>* cur) {
+		i++;
+		if (cur->getLeftChild() != nil) getSize(i, cur->getLeftChild());
+		if (cur->getRightChild() != nil) getSize(i, cur->getRightChild());
+	}
+
+	class map_iterator : public map<T1, T2> {
+		class queue;
+	private:
+		queue queueIt;
+		T1 key;
+		T2 value;
+		node<T1, T2>* it;
+		node<T1, T2>* nil;
+	public:
+		class queue {
+			class Elem;
+		private:
+			size_t size;
+			Elem* begin, * end;
+		public:
+			class Elem {
+			public:
+				Elem* next;
+				node<char, int>* value;
+				Elem(node<char, int>* elem_value, Elem* elem_next) {
+					value = elem_value;
+					next = elem_next;
+				}
+			};
+			queue() {
+				size = 0;
+				begin = nullptr;
+				end = nullptr;
+			}
+
+			~queue() {
+				clear();
+			}
+
+			node<char, int>* front() {
+				return begin->value;
+			}
+
+			node<char, int>* back() {
+				return end->value;
+			}
+
+			bool isEmpty() {
+				if (size == 0) return true;
+				else return false;
+			}
+
+			size_t getSize() {
+				return size;
+			}
+
+			void push(node<char, int>* value) {
+				Elem* temp = new Elem(value, nullptr);
+				if (isEmpty()) begin = temp;
+				else end->next = temp;
+				end = temp;
+				size++;
+			}
+
+			void pop() {
+				Elem* temp = begin;
+				begin = begin->next;
+				delete temp;
+				size--;
+			}
+
+			void clear() {
+				while (!isEmpty()) pop();
+			}
+		};
+		map_iterator(map<T1, T2>* tree) {
+			it = nullptr;
+			value = tree->getRoot()->getValue();
+			key = tree->getRoot()->getKey();
+			nil = tree->nil;
+			queueIt.push(tree->getRoot());
+		}
+
+		const T2& operator++() {
+			if (queueIt.getSize() == 0)
+				return NULL;
+			it = queueIt.front();
+			queueIt.pop();
+			if (it->getLeftChild() != nil)
+				queueIt.push(it->getLeftChild());
+			if (it->getRightChild() != nil)
+				queueIt.push(it->getRightChild());
+			value = it->getValue();
+			key = it->getKey();
+			return it->getValue();
+		}
+
+		const T1& operator*() {
+			return key;
+		}
+
+
+		const T2& getValue() {
+			return value;
+		}
+	};
 };
 #endif
